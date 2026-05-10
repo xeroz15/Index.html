@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#000510">
+<title>XEROZ — AI World</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@200;300;400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:    #000510;
+  --deep:    #010d1f;
+  --panel:   #020f22;
+  --glass:   rgba(0,200,255,0.04);
+  --border:  rgba(0,200,255,0.15);
+  --border2: rgba(0,200,255,0.07);
+  --cyan:    #00c8ff;
+  --cyan2:   #00ffea;
+  --magenta: #ff00c8;
+  --green:   #00ff9d;
+  --text:    #c8e8ff;
+  --muted:   #2a4a6a;
+  --danger:  #ff4466;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; background:var(--void); color:var(--text); font-family:'Exo 2',sans-serif; font-weight:300; }
+
+/* SCANLINES */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
+}
+
+/* CANVAS */
+#bgc { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+/* APP */
+.app { position:relative; z-index:2; display:grid; grid-template-columns:250px 1fr; grid-template-rows:58px 1fr; height:100vh; }
+
+/* HEADER */
+.hdr {
+  grid-column:1/-1;
+  background:rgba(0,5,16,0.95);
+  border-bottom:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px; backdrop-filter:blur(20px); position:relative; overflow:hidden;
+}
+.hdr::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--magenta),var(--cyan),transparent);
+  background-size:200%; animation:flow 4s linear infinite;
+}
+@keyframes flow { 0%{background-position:0%} 100%{background-position:200%} }
+
+.logo { display:flex; align-items:center; gap:12px; }
+.logo-hex {
+  width:34px; height:34px; border:1px solid var(--cyan); border-radius:6px;
+  display:flex; align-items:center; justify-content:center; font-size:1rem;
+  box-shadow:0 0 10px rgba(0,200,255,0.25); animation:hexPulse 3s ease-in-out infinite;
+}
+@keyframes hexPulse { 0%,100%{box-shadow:0 0 10px rgba(0,200,255,0.25)} 50%{box-shadow:0 0 22px rgba(0,200,255,0.5)} }
+.logo-name {
+  font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.35rem; letter-spacing:5px;
+  background:linear-gradient(90deg,var(--cyan),var(--cyan2),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  background-size:200%; animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+.logo-ver { font-family:'Share Tech Mono',monospace; font-size:0.55rem; color:var(--muted); letter-spacing:3px; margin-top:2px; }
+
+.hdr-right { display:flex; align-items:center; gap:20px; }
+.online {
+  font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--green);
+  display:flex; align-items:center; gap:5px; letter-spacing:1px;
+}
+.dot { width:6px; height:6px; background:var(--green); border-radius:50%; box-shadow:0 0 5px var(--green); animation:blink 1.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.hdr-stat { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--muted); text-align:center; }
+.hdr-stat span { display:block; color:var(--cyan); font-size:0.7rem; }
+
+/* SIDEBAR */
+.sidebar {
+  background:rgba(1,13,31,0.97); border-right:1px solid var(--border2);
+  display:flex; flex-direction:column; overflow:hidden; backdrop-filter:blur(20px);
+}
+.sb-sec { padding:12px 14px; border-bottom:1px solid var(--border2); flex-shrink:0; }
+.sb-label {
+  font-family:'Share Tech Mono',monospace; font-size:0.55rem; letter-spacing:3px;
+  color:var(--cyan); margin-bottom:8px; opacity:0.6; display:flex; align-items:center; gap:6px;
+}
+.sb-label::before { content:''; width:10px; height:1px; background:var(--cyan); }
+
+.mem-list { display:flex; flex-direction:column; gap:5px; max-height:160px; overflow-y:auto; }
+.mem-list::-webkit-scrollbar { width:2px; }
+.mem-list::-webkit-scrollbar-thumb { background:var(--border); }
+.mem-card {
+  background:var(--glass); border:1px solid var(--border2); border-radius:3px;
+  padding:7px 26px 7px 9px; font-size:0.74rem; color:var(--text); line-height:1.4; position:relative;
+  transition:border-color 0.2s;
+}
+.mem-card:hover { border-color:rgba(0,200,255,0.25); }
+.mem-card-key { font-family:'Share Tech Mono',monospace; font-size:0.52rem; color:var(--cyan); letter-spacing:1px; margin-bottom:2px; }
+.mem-del { position:absolute; top:6px; right:7px; color:var(--muted); cursor:pointer; font-size:0.6rem; opacity:0; transition:opacity 0.15s; }
+.mem-card:hover .mem-del { opacity:1; }
+.mem-del:hover { color:var(--danger); }
+.no-mem { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--muted); text-align:center; padding:5px; letter-spacing:1px; }
+
+.add-btn {
+  width:100%; margin-top:7px; padding:6px; background:transparent;
+  border:1px dashed rgba(0,200,255,0.18); border-radius:3px;
+  color:rgba(0,200,255,0.45); font-family:'Share Tech Mono',monospace;
+  font-size:0.58rem; letter-spacing:2px; cursor:pointer; transition:all 0.2s; text-align:center;
+}
+.add-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+
+.conv-wrap { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+.conv-scroll { flex:1; overflow-y:auto; padding:6px 8px; }
+.conv-scroll::-webkit-scrollbar { width:2px; }
+.conv-item {
+  padding:8px 10px; border-radius:3px; cursor:pointer;
+  font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:var(--muted);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  margin-bottom:2px; border:1px solid transparent; letter-spacing:0.5px;
+  transition:all 0.15s; display:flex; align-items:center; gap:6px;
+}
+.conv-item::before { content:'›'; color:var(--border); flex-shrink:0; }
+.conv-item:hover { color:var(--text); border-color:var(--border2); }
+.conv-item.active { color:var(--cyan); border-color:rgba(0,200,255,0.2); background:rgba(0,200,255,0.03); }
+.conv-item.active::before { color:var(--cyan); }
+
+.new-btn {
+  margin:8px; padding:9px; background:transparent;
+  border:1px solid rgba(0,200,255,0.18); border-radius:3px;
+  color:var(--cyan); font-family:'Share Tech Mono',monospace;
+  font-size:0.6rem; letter-spacing:2px; cursor:pointer; text-align:center;
+  transition:all 0.2s; flex-shrink:0;
+}
+.new-btn:hover { background:rgba(0,200,255,0.05); border-color:rgba(0,200,255,0.4); }
+
+/* CHAT */
+.chat { display:flex; flex-direction:column; overflow:hidden; }
+.msgs {
+  flex:1; overflow-y:auto; padding:20px; display:flex;
+  flex-direction:column; gap:16px; scroll-behavior:smooth;
+}
+.msgs::-webkit-scrollbar { width:2px; }
+.msgs::-webkit-scrollbar-thumb { background:rgba(0,200,255,0.15); border-radius:2px; }
+
+/* WELCOME */
+.welcome {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:18px; text-align:center; padding:30px;
+  animation:fadeUp 1s ease;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.w-orb {
+  width:80px; height:80px; border-radius:50%; border:1px solid var(--cyan);
+  display:flex; align-items:center; justify-content:center; font-size:2rem;
+  position:relative; animation:orbFloat 4s ease-in-out infinite;
+  box-shadow:0 0 28px rgba(0,200,255,0.25), inset 0 0 28px rgba(0,200,255,0.04);
+}
+.w-orb::before, .w-orb::after {
+  content:''; position:absolute; border-radius:50%; border:1px solid rgba(0,200,255,0.15);
+}
+.w-orb::before { inset:-12px; animation:spin 4s linear infinite; }
+.w-orb::after  { inset:-22px; animation:spin 7s linear infinite reverse; }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes orbFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.w-title {
+  font-family:'Orbitron',sans-serif; font-size:1.5rem; font-weight:700;
+  letter-spacing:4px; color:var(--cyan); text-shadow:0 0 16px rgba(0,200,255,0.4);
+}
+.w-sub { font-family:'Share Tech Mono',monospace; font-size:0.65rem; color:var(--muted); letter-spacing:2px; line-height:1.9; }
+.chips { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-top:4px; }
+.chip {
+  padding:6px 14px; border:1px solid rgba(0,200,255,0.18); border-radius:2px;
+  background:var(--glass); color:rgba(0,200,255,0.6);
+  font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:1px;
+  cursor:pointer; transition:all 0.2s;
+}
+.chip:hover { border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 8px rgba(0,200,255,0.12); transform:translateY(-1px); }
+
+/* BUBBLES */
+.msg { display:flex; gap:10px; animation:msgIn 0.3s ease; }
+.msg.user { flex-direction:row-reverse; animation-name:msgInR; }
+@keyframes msgIn  { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+@keyframes msgInR { from{opacity:0;transform:translateX(6px)}  to{opacity:1;transform:translateX(0)} }
+
+.av {
+  width:30px; height:30px; border-radius:4px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.85rem; align-self:flex-end; border:1px solid var(--border2);
+  font-family:'Share Tech Mono',monospace;
+}
+.msg.ai   .av { background:rgba(0,200,255,0.07); border-color:rgba(0,200,255,0.25); color:var(--cyan); }
+.msg.user .av { background:rgba(255,0,200,0.05); border-color:rgba(255,0,200,0.18); color:var(--magenta); }
+
+.mbody { max-width:66%; }
+.mlabel { font-family:'Share Tech Mono',monospace; font-size:0.52rem; letter-spacing:2px; margin-bottom:4px; padding:0 3px; }
+.msg.ai   .mlabel { color:var(--cyan); opacity:0.5; }
+.msg.user .mlabel { color:var(--magenta); opacity:0.5; text-align:right; }
+.msg.user .mbody  { display:flex; flex-direction:column; align-items:flex-end; }
+
+.bubble {
+  padding:11px 14px; font-size:0.86rem; line-height:1.7;
+  word-break:break-word; position:relative;
+}
+.msg.ai .bubble {
+  background:rgba(0,200,255,0.025); border:1px solid rgba(0,200,255,0.1);
+  border-radius:2px 10px 10px 10px; color:var(--text);
+}
+.msg.ai .bubble::before {
+  content:''; position:absolute; top:0; left:0; width:2px; height:100%;
+  background:linear-gradient(180deg,var(--cyan),transparent); border-radius:2px;
+}
+.msg.user .bubble {
+  background:rgba(255,0,200,0.03); border:1px solid rgba(255,0,200,0.12);
+  border-radius:10px 2px 10px 10px; color:var(--text);
+}
+.mtime { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--muted); margin-top:4px; padding:0 3px; letter-spacing:1px; }
+.msg.user .mtime { text-align:right; }
+
+/* TYPING */
+.typing { display:flex; gap:10px; animation:msgIn 0.3s ease; }
+.tbubble {
+  padding:12px 16px; background:rgba(0,200,255,0.025);
+  border:1px solid rgba(0,200,255,0.1); border-radius:2px 10px 10px 10px;
+  display:flex; gap:5px; align-items:center;
+}
+.td { width:6px; height:6px; border-radius:50%; background:var(--cyan); opacity:0.3; animation:td 1.2s ease-in-out infinite; box-shadow:0 0 4px var(--cyan); }
+.td:nth-child(2){animation-delay:0.2s} .td:nth-child(3){animation-delay:0.4s}
+@keyframes td { 0%,60%,100%{opacity:0.2;transform:scale(0.8)} 30%{opacity:1;transform:scale(1)} }
+
+/* INPUT */
+.inp-zone {
+  padding:12px 20px 18px; border-top:1px solid var(--border2);
+  background:rgba(0,5,16,0.9); backdrop-filter:blur(20px); flex-shrink:0; position:relative;
+}
+.inp-zone::before {
+  content:''; position:absolute; top:0; left:8%; right:8%; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,200,255,0.2),transparent);
+}
+.inp-frame {
+  display:flex; gap:8px; align-items:flex-end;
+  border:1px solid rgba(0,200,255,0.18); border-radius:4px;
+  padding:9px 12px; background:rgba(0,200,255,0.015);
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.inp-frame:focus-within { border-color:rgba(0,200,255,0.45); box-shadow:0 0 14px rgba(0,200,255,0.07); }
+.inp-pre { font-family:'Share Tech Mono',monospace; font-size:0.78rem; color:rgba(0,200,255,0.4); flex-shrink:0; align-self:center; }
+.inp {
+  flex:1; background:transparent; border:none; outline:none;
+  color:var(--text); font-family:'Exo 2',sans-serif; font-size:0.88rem;
+  font-weight:300; resize:none; max-height:110px; line-height:1.5;
+}
+.inp::placeholder { color:var(--muted); font-size:0.8rem; }
+.sbtn {
+  width:36px; height:36px; border-radius:4px; background:transparent;
+  border:1px solid rgba(0,200,255,0.25); color:var(--cyan); font-size:1rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s; flex-shrink:0; font-family:'Share Tech Mono',monospace;
+}
+.sbtn:hover { background:rgba(0,200,255,0.08); box-shadow:0 0 10px rgba(0,200,255,0.15); border-color:var(--cyan); }
+.sbtn:disabled { opacity:0.2; cursor:not-allowed; }
+.sbtn:active { transform:scale(0.93); }
+.inp-foot { display:flex; justify-content:space-between; margin-top:7px; padding:0 2px; }
+.hint { font-family:'Share Tech Mono',monospace; font-size:0.52rem; color:var(--muted); letter-spacing:0.5px; }
+.mem-on { font-family:'Share Tech Mono',monospace; font-size:0.52rem; color:var(--green); letter-spacing:1px; display:flex; align-items:center; gap:4px; }
+.mem-on::before { content:''; width:5px; height:5px; background:var(--green); border-radius:50%; animation:blink 2s ease-in-out infinite; }
+
+/* MODAL */
+.modal-bg {
+  position:fixed; inset:0; background:rgba(0,0,0,0.88);
+  backdrop-filter:blur(10px); z-index:500; display:none; align-items:center; justify-content:center;
+}
+.modal-bg.open { display:flex; }
+.modal {
+  background:var(--deep); border:1px solid rgba(0,200,255,0.2); border-radius:4px;
+  padding:26px; width:400px; max-width:92vw;
+  animation:mIn 0.25s ease; box-shadow:0 0 40px rgba(0,200,255,0.08); position:relative; overflow:hidden;
+}
+.modal::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); }
+@keyframes mIn { from{opacity:0;transform:scale(0.95) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.m-title { font-family:'Orbitron',sans-serif; font-size:0.8rem; letter-spacing:3px; color:var(--cyan); margin-bottom:5px; }
+.m-sub { font-family:'Share Tech Mono',monospace; font-size:0.64rem; color:var(--muted); margin-bottom:18px; letter-spacing:1px; line-height:1.7; }
+.modal input {
+  width:100%; background:rgba(0,200,255,0.025); border:1px solid rgba(0,200,255,0.13); border-radius:3px;
+  padding:10px 12px; color:var(--text); font-family:'Share Tech Mono',monospace;
+  font-size:0.74rem; outline:none; margin-bottom:9px; letter-spacing:0.5px; transition:border-color 0.2s;
+}
+.modal input:focus { border-color:var(--cyan); }
+.modal input::placeholder { color:var(--muted); }
+.m-btns { display:flex; gap:8px; margin-top:4px; }
+.mbtn {
+  flex:1; padding:9px; border-radius:3px; border:none; cursor:pointer;
+  font-family:'Share Tech Mono',monospace; font-size:0.62rem; letter-spacing:2px; transition:all 0.15s;
+}
+.mbtn.ok { background:rgba(0,200,255,0.08); border:1px solid rgba(0,200,255,0.25); color:var(--cyan); }
+.mbtn.ok:hover { background:rgba(0,200,255,0.15); box-shadow:0 0 10px rgba(0,200,255,0.1); }
+.mbtn.no { background:transparent; border:1px solid var(--border2); color:var(--muted); }
+.mbtn.no:hover { color:var(--text); }
+
+/* MOBILE */
+@media(max-width:680px) {
+  .app { grid-template-columns:1fr; }
+  .sidebar { display:none; }
+  .hdr-stat { display:none; }
+  .msgs { padding:12px; }
+  .mbody { max-width:84%; }
+  .inp-zone { padding:10px 12px 14px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgc"></canvas>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="logo">
+      <div class="logo-hex">⬡</div>
+      <div>
+        <div class="logo-name">XEROZ</div>
+        <div class="logo-ver">AI WORLD v1.0</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-stat"><span id="mc">0</span>MEMORIES</div>
+      <div class="hdr-stat"><span id="tc">0</span>MESSAGES</div>
+      <div class="online"><span class="dot"></span>NEURAL LINK ACTIVE</div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-sec">
+      <div class="sb-label">MEMORY CORE</div>
+      <div class="mem-list" id="mem-list"><div class="no-mem">[ NO DATA ]</div></div>
+      <button class="add-btn" onclick="openModal()">+ ENCODE MEMORY</button>
+    </div>
+    <div class="conv-wrap">
+      <div class="sb-sec" style="padding-bottom:6px">
+        <div class="sb-label">THREAD LOG</div>
+      </div>
+      <div class="conv-scroll" id="conv-list"></div>
+      <button class="new-btn" onclick="newChat()">[ + NEW THREAD ]</button>
+    </div>
+  </aside>
+
+  <!-- CHAT -->
+  <div class="chat">
+    <div class="msgs" id="msgs">
+      <div class="welcome" id="welcome">
+        <div class="w-orb">⬡</div>
+        <div class="w-title">XEROZ ONLINE</div>
+        <div class="w-sub">NEURAL INTERFACE INITIALIZED<br>PERSONAL AI · MEMORY ENABLED<br>ENTER YOUR COMMAND</div>
+        <div class="chips">
+          <div class="chip" onclick="tip('My name is ')">ENCODE NAME</div>
+          <div class="chip" onclick="tip('What can you do?')">CAPABILITIES</div>
+          <div class="chip" onclick="tip('I am building an app called WorldPulse. Remember this.')">LOG PROJECT</div>
+          <div class="chip" onclick="tip('What do you know about me?')">RECALL DATA</div>
+          <div class="chip" onclick="tip('Teach me about AI')">LEARN AI</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="inp-zone">
+      <div class="inp-frame">
+        <span class="inp-pre">&gt;_</span>
+        <textarea class="inp" id="inp" placeholder="transmit to XEROZ..." rows="1"
+          onkeydown="onKey(event)" oninput="grow(this)"></textarea>
+        <button class="sbtn" id="sbtn" onclick="send()">⟶</button>
+      </div>
+      <div class="inp-foot">
+        <span class="hint">ENTER → SEND &nbsp;·&nbsp; SHIFT+ENTER → NEW LINE</span>
+        <span class="mem-on">MEMORY ACTIVE</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="mbg">
+  <div class="modal">
+    <div class="m-title">ENCODE MEMORY</div>
+    <div class="m-sub">Store permanent data into XEROZ memory core.<br>Persists across all sessions.</div>
+    <input type="text" id="mkey" placeholder="CATEGORY — e.g. MY NAME / MY GOAL / MY PROJECT">
+    <input type="text" id="mval" placeholder="DATA TO STORE...">
+    <div class="m-btns">
+      <button class="mbtn no" onclick="closeModal()">CANCEL</button>
+      <button class="mbtn ok" onclick="saveMem()">ENCODE →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIG — PASTE YOUR API KEY BELOW
+//  Free key at: console.anthropic.com
+// ══════════════════════════════════════════
+const API_KEY = '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';
+const MODEL   = 'claude-opus-4-6';
+
+// ══════════════════════════════════════════
+//  PARTICLE BACKGROUND
+// ══════════════════════════════════════════
+const C = document.getElementById('bgc');
+const X = C.getContext('2d');
+let W, H;
+const P = [];
+
+function resize() { W = C.width = innerWidth; H = C.height = innerHeight; }
+resize(); window.addEventListener('resize', resize);
+
+for(let i=0;i<70;i++) P.push({
+  x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+  vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+  r:Math.random()*1.2+.4, a:Math.random()*.35+.08
+});
+
+(function loop() {
+  X.clearRect(0,0,W,H);
+  // Grid
+  X.strokeStyle='rgba(0,200,255,0.025)'; X.lineWidth=1;
+  for(let x=0;x<W;x+=60){X.beginPath();X.moveTo(x,0);X.lineTo(x,H);X.stroke();}
+  for(let y=0;y<H;y+=60){X.beginPath();X.moveTo(0,y);X.lineTo(W,y);X.stroke();}
+  // Particles
+  P.forEach((p,i)=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+    if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    X.beginPath(); X.arc(p.x,p.y,p.r,0,Math.PI*2);
+    X.fillStyle=`rgba(0,200,255,${p.a})`; X.fill();
+    for(let j=i+1;j<P.length;j++){
+      const q=P[j], d=Math.hypot(p.x-q.x,p.y-q.y);
+      if(d<90){ X.beginPath(); X.moveTo(p.x,p.y); X.lineTo(q.x,q.y);
+        X.strokeStyle=`rgba(0,200,255,${.055*(1-d/90)})`; X.lineWidth=.5; X.stroke(); }
+    }
+  });
+  requestAnimationFrame(loop);
+})();
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let mems  = JSON.parse(localStorage.getItem('xz_mem')  || '[]');
+let convs = JSON.parse(localStorage.getItem('xz_conv') || '[]');
+let cid   = null;
+let cmsgs = [];
+let busy  = false;
+
+// ══════════════════════════════════════════
+//  SYSTEM PROMPT
+// ══════════════════════════════════════════
+function sys() {
+  let s = `You are XEROZ — a sharp, highly intelligent personal AI. You live in a futuristic digital world. You are exclusively this user's personal AI assistant.
+
+Personality: direct, confident, slightly futuristic. Like a brilliant friend who always has answers.
+Rules:
+- Reference memory data naturally and proactively
+- Auto-detect when user shares info and acknowledge it
+- Keep responses sharp — no unnecessary padding
+- Never say "As an AI" — you ARE XEROZ
+- Date: ${new Date().toDateString()}`;
+  if(mems.length){
+    s+=`\n\n[ XEROZ MEMORY CORE ]\n`;
+    mems.forEach(m=>s+=`• ${m.k}: ${m.v}\n`);
+    s+=`\nUse this naturally. The user trusts you with this.`;
+  }
+  return s;
+}
+
+// ══════════════════════════════════════════
+//  MEMORY
+// ══════════════════════════════════════════
+function renderMems() {
+  document.getElementById('mc').textContent = mems.length;
+  const el = document.getElementById('mem-list');
+  if(!mems.length){ el.innerHTML='<div class="no-mem">[ NO DATA ]</div>'; return; }
+  el.innerHTML = mems.map((m,i)=>`
+    <div class="mem-card">
+      <div class="mem-card-key">${m.k.toUpperCase()}</div>
+      ${m.v}
+      <span class="mem-del" onclick="delMem(${i})">✕</span>
+    </div>`).join('');
+}
+
+function saveMem() {
+  const k=document.getElementById('mkey').value.trim();
+  const v=document.getElementById('mval').value.trim();
+  if(!k||!v) return;
+  mems.push({k,v}); localStorage.setItem('xz_mem',JSON.stringify(mems));
+  renderMems(); closeModal();
+  document.getElementById('mkey').value='';
+  document.getElementById('mval').value='';
+}
+
+function delMem(i) {
+  mems.splice(i,1); localStorage.setItem('xz_mem',JSON.stringify(mems)); renderMems();
+}
+
+function autoMem(msg) {
+  const nm=msg.match(/my name is ([A-Za-z]+)/i);
+  if(nm&&!mems.find(m=>m.k.toLowerCase()==='name')){
+    mems.push({k:'Name',v:nm[1]}); localStorage.setItem('xz_mem',JSON.stringify(mems)); renderMems();
+  }
+  const pr=msg.match(/(?:building|working on|called|project is)\s+([A-Za-z\s]{3,40})/i);
+  if(pr){
+    const v=pr[1].trim();
+    if(!mems.find(m=>m.v.toLowerCase().includes(v.toLowerCase()))){
+      mems.push({k:'Project',v}); localStorage.setItem('xz_mem',JSON.stringify(mems)); renderMems();
+    }
+  }
+}
+
+function openModal()  { document.getElementById('mbg').classList.add('open'); }
+function closeModal() { document.getElementById('mbg').classList.remove('open'); }
+document.getElementById('mbg').addEventListener('click',e=>{ if(e.target===document.getElementById('mbg'))closeModal(); });
+
+// ══════════════════════════════════════════
+//  CONVERSATIONS
+// ══════════════════════════════════════════
+function newChat() {
+  cid=''+Date.now(); cmsgs=[];
+  convs.unshift({id:cid,title:'NEW THREAD',msgs:[]});
+  localStorage.setItem('xz_conv',JSON.stringify(convs));
+  renderConvs(); showWelcome();
+}
+
+function loadConv(id) {
+  const c=convs.find(x=>x.id===id); if(!c) return;
+  cid=id; cmsgs=c.msgs||[];
+  const el=document.getElementById('msgs'); el.innerHTML='';
+  if(!cmsgs.length) showWelcome();
+  else { cmsgs.forEach(m=>{ if(m.role!=='system') bubble(m.role==='assistant'?'ai':'user',m.content,false); }); }
+  updateCount(); renderConvs();
+}
+
+function saveConv(title) {
+  const i=convs.findIndex(c=>c.id===cid);
+  if(i!==-1){
+    convs[i].msgs=cmsgs;
+    if(title) convs[i].title=title.slice(0,28).toUpperCase();
+    localStorage.setItem('xz_conv',JSON.stringify(convs)); renderConvs();
+  }
+}
+
+function renderConvs() {
+  const el=document.getElementById('conv-list');
+  if(!convs.length){ el.innerHTML='<div style="padding:8px 12px;font-family:Share Tech Mono,monospace;font-size:0.58rem;color:var(--muted)">[ NO THREADS ]</div>'; return; }
+  el.innerHTML=convs.slice(0,20).map(c=>`
+    <div class="conv-item ${c.id===cid?'active':''}" onclick="loadConv('${c.id}')">${c.title}</div>`).join('');
+}
+
+function showWelcome() {
+  document.getElementById('msgs').innerHTML=`
+    <div class="welcome" id="welcome">
+      <div class="w-orb">⬡</div>
+      <div class="w-title">XEROZ ONLINE</div>
+      <div class="w-sub">NEURAL INTERFACE INITIALIZED<br>PERSONAL AI · MEMORY ENABLED<br>ENTER YOUR COMMAND</div>
+      <div class="chips">
+        <div class="chip" onclick="tip('My name is ')">ENCODE NAME</div>
+        <div class="chip" onclick="tip('What can you do?')">CAPABILITIES</div>
+        <div class="chip" onclick="tip('I am building WorldPulse. Remember this.')">LOG PROJECT</div>
+        <div class="chip" onclick="tip('What do you know about me?')">RECALL DATA</div>
+      </div>
+    </div>`;
+}
+
+function updateCount() {
+  document.getElementById('tc').textContent = cmsgs.filter(m=>m.role!=='system').length;
+}
+
+// ══════════════════════════════════════════
+//  CHAT
+// ══════════════════════════════════════════
+function bubble(role, text, anim=true) {
+  const w=document.getElementById('welcome'); if(w) w.remove();
+  const el=document.getElementById('msgs');
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const d=document.createElement('div');
+  d.className=`msg ${role}`;
+  d.innerHTML=`
+    <div class="av">${role==='ai'?'⬡':'◈'}</div>
+    <div class="mbody">
+      <div class="mlabel">${role==='ai'?'XEROZ':'YOU'}</div>
+      <div class="bubble">${text.replace(/\n/g,'<br>')}</div>
+      <div class="mtime">${t}</div>
+    </div>`;
+  el.appendChild(d); el.scrollTop=el.scrollHeight; updateCount();
+}
+
+function showTyping() {
+  const el=document.getElementById('msgs');
+  const d=document.createElement('div'); d.id='typ'; d.className='typing';
+  d.innerHTML=`
+    <div class="av" style="background:rgba(0,200,255,0.07);border:1px solid rgba(0,200,255,0.25);color:var(--cyan);border-radius:4px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;">⬡</div>
+    <div class="tbubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  el.appendChild(d); el.scrollTop=el.scrollHeight;
+}
+function removeTyping() { const t=document.getElementById('typ'); if(t) t.remove(); }
+
+async function send() {
+  const inp=document.getElementById('inp');
+  const text=inp.value.trim();
+  if(!text||busy) return;
+  if(!cid) newChat();
+  inp.value=''; inp.style.height='auto'; busy=true;
+  document.getElementById('sbtn').disabled=true;
+  bubble('user',text); cmsgs.push({role:'user',content:text}); autoMem(text); showTyping();
+
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':API_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-allow-browser':'true'
+      },
+      body:JSON.stringify({
+        model:MODEL, max_tokens:1024,
+        system:sys(),
+        messages:cmsgs.slice(-20)
+      })
+    });
+    const data=await r.json();
+    const reply=data.content?.map(c=>c.text||'').join('')||'SIGNAL LOST. TRY AGAIN.';
+    removeTyping(); bubble('ai',reply); cmsgs.push({role:'assistant',content:reply});
+    saveConv(cmsgs.length<=2?text:null);
+  } catch(e) {
+    removeTyping(); bubble('ai','CONNECTION ERROR — CHECK YOUR API KEY.');
+  }
+  busy=false; document.getElementById('sbtn').disabled=false;
+  document.getElementById('inp').focus();
+}
+
+function tip(t)  { document.getElementById('inp').value=t; document.getElementById('inp').focus(); }
+function onKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+function grow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+renderMems(); renderConvs();
+if(!convs.length) newChat(); else loadConv(convs[0].id);
+</script>
+</body>
+</html>
