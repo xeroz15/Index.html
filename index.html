@@ -251,8 +251,9 @@ body::after {
 <script>
 
 // ════════════════════════════════════════
-// STEP 1: PASTE YOUR GEMINI API KEY BELOW
-// Get free key → aistudio.google.com
+// STEP 1: PASTE YOUR OPENROUTER API KEY
+// Get FREE key → openrouter.ai/keys
+// Sign up with Google → Copy key
 // ════════════════════════════════════════
 const API_KEY = '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';
 
@@ -261,7 +262,7 @@ const API_KEY = 'sk-or-v1-5fa82e7a54218779c97065557fef3fccaec14a84172fae5d91707a
 // DO NOT EDIT BELOW THIS LINE
 // ════════════════════════════════════════
 
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'mistralai/mistral-7b-instruct:free';
 
 // PARTICLE BACKGROUND
 const C = document.getElementById('bgc');
@@ -380,37 +381,33 @@ async function send() {
   showTyping();
 
   try {
-    // Build Gemini format
-    const history = [];
+    // Build messages for OpenRouter
+    const history = [
+      {role: 'system', content: buildSystem()},
+      ...msgs.slice(-18).map(m => ({role: m.role, content: m.content}))
+    ];
 
-    // System prompt as first exchange
-    history.push({role:'user',   parts:[{text: buildSystem()}]});
-    history.push({role:'model',  parts:[{text: 'Understood. I am XEROZ, your personal AI. Ready.'}]});
-
-    // Add conversation history
-    msgs.slice(-18).forEach(m => {
-      history.push({
-        role:  m.role === 'assistant' ? 'model' : 'user',
-        parts: [{text: m.content}]
-      });
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`,
+        'HTTP-Referer': window.location.href,
+        'X-Title': 'XEROZ AI'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: history
+      })
     });
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
-      {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({contents: history})
-      }
-    );
-
-    const data  = await res.json();
+    const data = await res.json();
 
     if(data.error) {
       throw new Error(data.error.message);
     }
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'NO RESPONSE RECEIVED.';
+    const reply = data.choices?.[0]?.message?.content || 'NO RESPONSE RECEIVED.';
 
     removeTyping();
     bubble('ai', reply);
