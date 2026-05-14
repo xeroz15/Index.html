@@ -278,11 +278,11 @@
 
 <!-- NAV -->
 <div class="nav">
-  <button class="nav-btn active-plan" onclick="showSection('today')">✅ Today</button>
-  <button class="nav-btn" onclick="showSection('history')">📖 History</button>
-  <button class="nav-btn" onclick="showSection('biology')">🧬 Biology</button>
-  <button class="nav-btn" onclick="showSection('physics')">⚡ Physics</button>
-  <button class="nav-btn" onclick="showSection('chemistry')">🧪 Chemistry</button>
+  <button class="nav-btn active-plan" onclick="showSection('today', this)">✅ Today</button>
+  <button class="nav-btn" onclick="showSection('history', this)">📖 History</button>
+  <button class="nav-btn" onclick="showSection('biology', this)">🧬 Biology</button>
+  <button class="nav-btn" onclick="showSection('physics', this)">⚡ Physics</button>
+  <button class="nav-btn" onclick="showSection('chemistry', this)">🧪 Chemistry</button>
 </div>
 
 <!-- ===== TODAY'S TASKS ===== -->
@@ -472,4 +472,403 @@
 <script>
 // ===== DATA =====
 
-const bioBot
+const bioBot11 = [
+  { name: "Diversity in Living World", wt: "3-4Q", priority:"high" },
+  { name: "Biological Classification", wt: "2-3Q", priority:"high" },
+  { name: "Plant Kingdom", wt: "2-3Q", priority:"high" },
+  { name: "Morphology of Flowering Plants", wt: "3-4Q", priority:"high" },
+  { name: "Anatomy of Flowering Plants", wt: "2Q", priority:"med" },
+  { name: "Cell: The Unit of Life", wt: "3-4Q", priority:"high" },
+];
+const bioBot12 = [
+  { name: "Sexual Reproduction in Flowering Plants", wt: "3-4Q", priority:"high" },
+  { name: "Molecular Basis of Inheritance", wt: "5-6Q", priority:"high" },
+  { name: "Principles of Inheritance & Variation", wt: "4-5Q", priority:"high" },
+  { name: "Microbes in Human Welfare", wt: "2Q", priority:"med" },
+  { name: "Biotechnology: Principles & Processes", wt: "2-3Q", priority:"high" },
+  { name: "Biotechnology & Its Applications", wt: "2-3Q", priority:"high" },
+  { name: "Organisms & Populations", wt: "2-3Q", priority:"med" },
+];
+const bioZoo11 = [
+  { name: "Animal Kingdom", wt: "3-4Q", priority:"high" },
+  { name: "Structural Organisation in Animals", wt: "1-2Q", priority:"med" },
+  { name: "Cell Cycle and Cell Division", wt: "3-4Q", priority:"high" },
+  { name: "Biomolecules", wt: "2-3Q", priority:"high" },
+  { name: "Digestion & Absorption", wt: "2-3Q", priority:"high" },
+];
+const bioZoo12 = [
+  { name: "Human Reproduction", wt: "3-4Q", priority:"high" },
+  { name: "Reproductive Health", wt: "2Q", priority:"med" },
+  { name: "Evolution", wt: "3-4Q", priority:"high" },
+  { name: "Human Health & Disease", wt: "3-4Q", priority:"high" },
+  { name: "Strategies for Enhancement in Food Production", wt: "1-2Q", priority:"med" },
+  { name: "Ecosystem", wt: "3-4Q", priority:"high" },
+  { name: "Biodiversity & Conservation", wt: "2-3Q", priority:"high" },
+];
+
+// Plant Physiology & Human Physiology (highest weightage in bio)
+const bioBot11Extra = [
+  { name: "Transport in Plants", wt: "1-2Q", priority:"med" },
+  { name: "Mineral Nutrition", wt: "1-2Q", priority:"med" },
+  { name: "Photosynthesis in Higher Plants", wt: "3-4Q", priority:"high" },
+  { name: "Respiration in Plants", wt: "2-3Q", priority:"high" },
+  { name: "Plant Growth & Development", wt: "2Q", priority:"med" },
+];
+const bioZoo11Extra = [
+  { name: "Breathing & Exchange of Gases", wt: "2-3Q", priority:"high" },
+  { name: "Body Fluids & Circulation", wt: "3-4Q", priority:"high" },
+  { name: "Excretory Products & Their Elimination", wt: "3-4Q", priority:"high" },
+  { name: "Locomotion & Movement", wt: "2Q", priority:"med" },
+  { name: "Neural Control & Coordination", wt: "3-4Q", priority:"high" },
+  { name: "Chemical Coordination & Integration", wt: "3-4Q", priority:"high" },
+];
+
+// Merge extras
+bioBot11.push(...bioBot11Extra);
+bioZoo11.push(...bioZoo11Extra);
+
+const phy11 = [
+  { name: "Laws of Motion", wt: "3-4Q", priority:"high" },
+  { name: "Work, Energy & Power", wt: "2-3Q", priority:"high" },
+  { name: "Motion of System of Particles & Rigid Body", wt: "2-3Q", priority:"high" },
+  { name: "Gravitation", wt: "2Q", priority:"med" },
+  { name: "Properties of Bulk Matter", wt: "1-2Q", priority:"med" },
+  { name: "Thermodynamics", wt: "3-4Q", priority:"high" },
+  { name: "Kinetic Theory of Gases", wt: "1-2Q", priority:"med" },
+  { name: "Oscillations & Waves", wt: "2-3Q", priority:"high" },
+  { name: "Kinematics", wt: "2Q", priority:"med" },
+  { name: "Physical World & Measurement", wt: "1Q", priority:"med" },
+];
+const phy12 = [
+  { name: "Electrostatic Potential & Capacitance", wt: "3-4Q", priority:"high" },
+  { name: "Current Electricity", wt: "3-4Q", priority:"high" },
+  { name: "Magnetic Effects of Current & Magnetism", wt: "3-4Q", priority:"high" },
+  { name: "Electromagnetic Induction", wt: "2-3Q", priority:"high" },
+  { name: "Alternating Current", wt: "2Q", priority:"med" },
+  { name: "Ray Optics & Optical Instruments", wt: "3-4Q", priority:"high" },
+  { name: "Wave Optics", wt: "2Q", priority:"med" },
+  { name: "Dual Nature of Matter & Radiation", wt: "2-3Q", priority:"high" },
+  { name: "Atoms, Nuclei & Electronic Devices", wt: "3-4Q", priority:"high" },
+];
+
+const chemPhysical = [
+  { name: "Some Basic Concepts of Chemistry (Mole Concept)", wt: "2-3Q", priority:"high" },
+  { name: "Thermodynamics", wt: "2-3Q", priority:"high" },
+  { name: "Equilibrium", wt: "2-3Q", priority:"high" },
+  { name: "Chemical Kinetics", wt: "2-3Q", priority:"high" },
+  { name: "Electrochemistry", wt: "2-3Q", priority:"high" },
+  { name: "Solutions", wt: "2Q", priority:"med" },
+  { name: "States of Matter", wt: "1-2Q", priority:"med" },
+  { name: "Surface Chemistry", wt: "1-2Q", priority:"med" },
+  { name: "Redox Reactions", wt: "1Q", priority:"med" },
+  { name: "Solid State", wt: "1-2Q", priority:"med" },
+];
+const chemInorganic = [
+  { name: "Chemical Bonding & Molecular Structure", wt: "3-4Q", priority:"high" },
+  { name: "p-Block Elements (Class 12)", wt: "3-4Q", priority:"high" },
+  { name: "d & f Block Elements", wt: "2-3Q", priority:"high" },
+  { name: "Coordination Compounds", wt: "2-3Q", priority:"high" },
+  { name: "Classification of Elements & Periodicity", wt: "2Q", priority:"high" },
+  { name: "s-Block Elements", wt: "1-2Q", priority:"med" },
+  { name: "Some p-Block Elements (Class 11)", wt: "2Q", priority:"med" },
+  { name: "Hydrogen", wt: "1Q", priority:"med" },
+  { name: "General Principles of Isolation of Elements", wt: "1-2Q", priority:"med" },
+];
+const chemOrganic = [
+  { name: "Aldehydes, Ketones & Carboxylic Acids", wt: "3-4Q", priority:"high" },
+  { name: "Amines", wt: "2-3Q", priority:"high" },
+  { name: "Alcohols, Phenols & Ethers", wt: "2-3Q", priority:"high" },
+  { name: "Haloalkanes & Haloarenes", wt: "2-3Q", priority:"high" },
+  { name: "Biomolecules", wt: "2-3Q", priority:"high" },
+  { name: "Organic Chemistry – Basic Principles", wt: "2-3Q", priority:"high" },
+  { name: "Hydrocarbons", wt: "2Q", priority:"high" },
+  { name: "Polymers", wt: "1-2Q", priority:"med" },
+  { name: "Chemistry in Everyday Life", wt: "1-2Q", priority:"med" },
+  { name: "Environmental Chemistry", wt: "1Q", priority:"med" },
+];
+
+// ===== STORAGE (safe localStorage with in-memory fallback) =====
+let _memStore = {};
+function storageGet(k) {
+  try { return localStorage.getItem(k); } catch(e) { return _memStore[k] || null; }
+}
+function storageSet(k, v) {
+  try { localStorage.setItem(k, v); } catch(e) { _memStore[k] = v; }
+}
+
+let state = {};
+try { state = JSON.parse(storageGet('reneet2026') || '{}'); } catch(e) { state = {}; }
+function save() { storageSet('reneet2026', JSON.stringify(state)); }
+
+// ===== NAV =====
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => { b.className = 'nav-btn'; });
+  const sec = document.getElementById('section-' + name);
+  if (sec) sec.classList.add('active');
+  const map = { today:'active-plan', history:'active-plan', biology:'active-bio', physics:'active-phy', chemistry:'active-chem' };
+  if (btn) btn.className = 'nav-btn ' + (map[name] || 'active-plan');
+  if (name === 'history') renderHistory();
+}
+
+// ===== RENDER CHAPTERS =====
+function chapterKey(name) { return 'ch_' + name.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,''); }
+
+function renderChapters(chapters, containerId, tagClass, showJee = true) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = chapters.map(ch => {
+    const k = chapterKey(ch.name);
+    const s = state[k] || {};
+    return `
+    <div class="chapter-row" id="row_${k}">
+      <div class="chapter-top">
+        <span class="chapter-name">${ch.name}</span>
+        <span class="wt-badge ${ch.priority==='high'?'tag-high':'tag-med'}" style="font-size:10px;padding:2px 7px;border-radius:5px;">${ch.wt}</span>
+      </div>
+      <div class="chapter-checks">
+        <div class="check-item" onclick="toggleCheck('${k}','revision')">
+          <div class="check-box ${s.revision?'checked':''}" id="cb_${k}_revision">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L4 7L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="check-label">Revision</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck('${k}','pyq')">
+          <div class="check-box ${s.pyq?'checked':''}" id="cb_${k}_pyq">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L4 7L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="check-label">PYQ</span>
+        </div>
+        ${showJee ? `
+        <div class="check-item" onclick="toggleCheck('${k}','jee')">
+          <div class="check-box ${s.jee?'checked':''}" id="cb_${k}_jee">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L4 7L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="check-label">JEE Mains Q</span>
+        </div>` : ''}
+      </div>
+      <div class="weak-toggle" onclick="toggleWeak('${k}')">
+        <span>⚠️ Weak Topics</span>
+      </div>
+      <div class="weak-area ${s.weakOpen?'open':''}" id="weak_${k}">
+        <textarea class="weak-input" placeholder="Write weak sub-topics here..." oninput="saveWeak('${k}', this.value)">${s.weak||''}</textarea>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCheck(k, field) {
+  if (!state[k]) state[k] = {};
+  state[k][field] = !state[k][field];
+  save();
+  const cb = document.getElementById(`cb_${k}_${field}`);
+  if (cb) cb.className = 'check-box' + (state[k][field] ? ' checked' : '');
+  updateProgress();
+}
+
+function toggleWeak(k) {
+  if (!state[k]) state[k] = {};
+  state[k].weakOpen = !state[k].weakOpen;
+  save();
+  const el = document.getElementById(`weak_${k}`);
+  if (el) el.className = 'weak-area' + (state[k].weakOpen ? ' open' : '');
+}
+
+function saveWeak(k, val) {
+  if (!state[k]) state[k] = {};
+  state[k].weak = val;
+  save();
+}
+
+// ===== PROGRESS =====
+function countChecks(chapters, showJee = true) {
+  const perChapter = showJee ? 3 : 2;
+  let done = 0, total = chapters.length * perChapter;
+  chapters.forEach(ch => {
+    const k = chapterKey(ch.name);
+    const s = state[k] || {};
+    if (s.revision) done++;
+    if (s.pyq) done++;
+    if (showJee && s.jee) done++;
+  });
+  return { done, total };
+}
+
+function updateProgress() {
+  const allBio = [...bioBot11, ...bioBot12, ...bioZoo11, ...bioZoo12];
+  const allPhy = [...phy11, ...phy12];
+  const allChem = [...chemPhysical, ...chemInorganic, ...chemOrganic];
+
+  function set(chapters, barId, pctId, showJee = true) {
+    const {done, total} = countChecks(chapters, showJee);
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
+    const bar = document.getElementById(barId);
+    const pctEl = document.getElementById(pctId);
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+  }
+  set(allBio, 'bioBar', 'bioPercent', false);
+  set(allPhy, 'phyBar', 'phyPercent', true);
+  set(allChem, 'chemBar', 'chemPercent', true);
+}
+
+// ===== TASKS =====
+function toggleTask(row) {
+  row.classList.toggle('done-task');
+  const cb = row.querySelector('.task-check');
+  if (cb) cb.classList.toggle('done');
+}
+
+// ===== DAY SYSTEM =====
+let currentDay = 1;
+const startDate = state._startDate || new Date().toISOString().split('T')[0];
+if (!state._startDate) { state._startDate = startDate; save(); }
+
+function todayKey(day) { return `day_${day}`; }
+
+function changeDay(dir) {
+  const newDay = currentDay + dir;
+  if (newDay < 1) return;
+  currentDay = newDay;
+  loadDayData();
+}
+
+function loadDayData() {
+  const k = todayKey(currentDay);
+  const d = state[k] || {};
+  document.getElementById('dayLabel').textContent = `Day ${currentDay}`;
+
+  // compute date
+  const start = new Date(state._startDate);
+  start.setDate(start.getDate() + currentDay - 1);
+  document.getElementById('dayDate').textContent = start.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+
+  document.getElementById('morningPlan').value = d.morning || '';
+  document.getElementById('eveningReview').value = d.evening || '';
+  document.getElementById('scorePhysics').value = d.phy || '';
+  document.getElementById('scoreChemistry').value = d.chem || '';
+  document.getElementById('scoreBiology').value = d.bio || '';
+  document.getElementById('saveMsg').style.display = 'none';
+  updateTotal();
+}
+
+function saveDayData() {
+  const k = todayKey(currentDay);
+  if (!state[k]) state[k] = {};
+  state[k].morning = document.getElementById('morningPlan').value;
+  state[k].evening = document.getElementById('eveningReview').value;
+  state[k].phy = document.getElementById('scorePhysics').value;
+  state[k].chem = document.getElementById('scoreChemistry').value;
+  state[k].bio = document.getElementById('scoreBiology').value;
+  save();
+}
+
+function saveAndConfirm() {
+  saveDayData();
+  const msg = document.getElementById('saveMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2000);
+}
+
+function updateTotal() {
+  const p = parseInt(document.getElementById('scorePhysics').value)||0;
+  const c = parseInt(document.getElementById('scoreChemistry').value)||0;
+  const b = parseInt(document.getElementById('scoreBiology').value)||0;
+  const total = p + c + b;
+  const el = document.getElementById('totalScore');
+  el.textContent = (p||c||b) ? `Total: ${total} / 720` : 'Total: — / 720';
+  el.style.color = total >= 600 ? '#22c55e' : total >= 450 ? '#f59e0b' : total > 0 ? '#ef4444' : 'var(--text)';
+}
+
+// ===== HISTORY =====
+function renderHistory() {
+  const container = document.getElementById('historyContainer');
+  const noHistory = document.getElementById('noHistory');
+
+  // collect all day keys
+  const dayEntries = [];
+  for (let i = 1; i <= 200; i++) {
+    const d = state[todayKey(i)];
+    if (d && (d.morning || d.evening || d.phy || d.chem || d.bio)) {
+      dayEntries.push({ day: i, data: d });
+    }
+  }
+
+  if (dayEntries.length === 0) {
+    noHistory.style.display = 'block';
+    container.innerHTML = '';
+    return;
+  }
+  noHistory.style.display = 'none';
+
+  container.innerHTML = dayEntries.reverse().map(({ day, data }) => {
+    const start = new Date(state._startDate);
+    start.setDate(start.getDate() + day - 1);
+    const dateStr = start.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+    const total = (parseInt(data.phy)||0) + (parseInt(data.chem)||0) + (parseInt(data.bio)||0);
+    const scoreColor = total >= 600 ? '#22c55e' : total >= 450 ? '#f59e0b' : total > 0 ? '#ef4444' : 'var(--text-dim)';
+
+    return `
+    <div class="task-card" style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div>
+          <span style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:#3b82f6;">Day ${day}</span>
+          <span style="font-size:11px;color:var(--text-dim);margin-left:8px;">${dateStr}</span>
+        </div>
+        ${total > 0 ? `<span style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:${scoreColor};">${total}/720</span>` : ''}
+      </div>
+
+      ${data.morning ? `
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;color:#60a5fa;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">🌅 Morning Plan</div>
+        <div style="background:var(--card2);border-radius:8px;padding:10px;font-size:12px;color:var(--text-mid);line-height:1.6;white-space:pre-wrap;border-left:3px solid #1e3a5f;">${escapeHtml(data.morning)}</div>
+      </div>` : ''}
+
+      ${(data.phy || data.chem || data.bio) ? `
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        ${data.phy ? `<div style="flex:1;background:var(--card2);border-radius:8px;padding:8px;text-align:center;border-top:2px solid #3b82f6;"><div style="font-size:10px;color:var(--text-dim);">Physics</div><div style="font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:#3b82f6;">${data.phy}</div></div>` : ''}
+        ${data.chem ? `<div style="flex:1;background:var(--card2);border-radius:8px;padding:8px;text-align:center;border-top:2px solid #f59e0b;"><div style="font-size:10px;color:var(--text-dim);">Chemistry</div><div style="font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:#f59e0b;">${data.chem}</div></div>` : ''}
+        ${data.bio ? `<div style="flex:1;background:var(--card2);border-radius:8px;padding:8px;text-align:center;border-top:2px solid #22c55e;"><div style="font-size:10px;color:var(--text-dim);">Biology</div><div style="font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:#22c55e;">${data.bio}</div></div>` : ''}
+      </div>` : ''}
+
+      ${data.evening ? `
+      <div>
+        <div style="font-size:10px;color:#4ade80;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">🌙 End of Day Review</div>
+        <div style="background:var(--card2);border-radius:8px;padding:10px;font-size:12px;color:var(--text-mid);line-height:1.6;white-space:pre-wrap;border-left:3px solid #166534;">${escapeHtml(data.evening)}</div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== COLLAPSE =====
+function toggleCollapse(btn) {
+  btn.classList.toggle('open');
+  const content = btn.nextElementSibling;
+  if (content) content.classList.toggle('open');
+}
+
+// ===== INIT =====
+window.onload = () => {
+  renderChapters(bioBot11, 'bio11-botany', 'tag-bio', false);
+  renderChapters(bioBot12, 'bio12-botany', 'tag-bio', false);
+  renderChapters(bioZoo11, 'bio11-zoology', 'tag-bio', false);
+  renderChapters(bioZoo12, 'bio12-zoology', 'tag-bio', false);
+  renderChapters(phy11, 'phy11', 'tag-phy', true);
+  renderChapters(phy12, 'phy12', 'tag-phy', true);
+  renderChapters(chemPhysical, 'chem-physical', 'tag-chem', true);
+  renderChapters(chemInorganic, 'chem-inorganic', 'tag-chem', true);
+  renderChapters(chemOrganic, 'chem-organic', 'tag-chem', true);
+  updateProgress();
+
+  // load today's day (find latest day or default to 1)
+  const allDays = Object.keys(state).filter(k => k.startsWith('day_')).map(k => parseInt(k.split('_')[1]));
+  currentDay = allDays.length > 0 ? Math.max(...allDays) : 1;
+  loadDayData();
+};
+</script>
+</body>
+</html>
