@@ -2,431 +2,474 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#000510">
-<title>XEROZ — AI World</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Re-NEET 2026 Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:      #000510;
-  --panel:   #010d1f;
-  --glass:   rgba(0,200,255,0.04);
-  --border:  rgba(0,200,255,0.15);
-  --border2: rgba(0,200,255,0.07);
-  --cyan:    #00c8ff;
-  --cyan2:   #00ffea;
-  --magenta: #ff00c8;
-  --green:   #00ff9d;
-  --text:    #c8e8ff;
-  --muted:   #2a4a6a;
-  --danger:  #ff4466;
-}
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:'Exo 2',sans-serif; font-weight:300; }
+  :root {
+    --bg: #0a0e1a;
+    --card: #111827;
+    --card2: #1a2236;
+    --border: #1e2d45;
+    --accent-bio: #22c55e;
+    --accent-phy: #3b82f6;
+    --accent-chem: #f59e0b;
+    --accent-bio-dim: #166534;
+    --accent-phy-dim: #1e3a5f;
+    --accent-chem-dim: #78350f;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --text-mid: #94a3b8;
+    --tick: #22c55e;
+    --red: #ef4444;
+    --purple: #a855f7;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
 
-/* SCANLINES */
-body::after {
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
-}
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0a0e1a 0%, #111827 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 16px 14px;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-left h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #3b82f6, #22c55e);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .header-left p { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .day-badge {
+    background: linear-gradient(135deg, #1e3a5f, #1a2236);
+    border: 1px solid #3b82f6;
+    border-radius: 10px; padding: 6px 14px; text-align: center;
+  }
+  .day-badge span { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:#3b82f6; display:block; line-height:1; }
+  .day-badge small { font-size:9px; color:var(--text-dim); letter-spacing:1px; text-transform:uppercase; }
 
-/* CANVAS */
-#bgc { position:fixed; inset:0; z-index:0; pointer-events:none; }
+  /* NAV TABS */
+  .nav {
+    display: flex; gap: 6px; padding: 12px 16px 0;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav-btn {
+    flex-shrink: 0;
+    padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text-dim);
+    font-family:'Syne',sans-serif; font-size:12px; font-weight:600;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .nav-btn.active-bio { background: var(--accent-bio-dim); border-color: var(--accent-bio); color: var(--accent-bio); }
+  .nav-btn.active-phy { background: var(--accent-phy-dim); border-color: var(--accent-phy); color: var(--accent-phy); }
+  .nav-btn.active-chem { background: var(--accent-chem-dim); border-color: var(--accent-chem); color: var(--accent-chem); }
+  .nav-btn.active-plan { background: #2d1b69; border-color: var(--purple); color: var(--purple); }
 
-/* APP SHELL */
-.app { position:relative; z-index:2; display:flex; flex-direction:column; height:100vh; }
+  /* SECTIONS */
+  .section { display: none; padding: 14px 16px; }
+  .section.active { display: block; }
 
-/* HEADER */
-.hdr {
-  background:rgba(0,5,16,0.97); border-bottom:1px solid var(--border2);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 16px; height:56px; flex-shrink:0; position:relative; overflow:hidden;
-}
-.hdr::after {
-  content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
-  background:linear-gradient(90deg,transparent,var(--cyan),var(--magenta),var(--cyan),transparent);
-  background-size:200%; animation:flow 4s linear infinite;
-}
-@keyframes flow { 0%{background-position:0%} 100%{background-position:200%} }
+  /* DAY PLAN BAR */
+  .day-strip {
+    display: flex; gap: 6px; overflow-x: auto;
+    padding: 12px 0 4px; scrollbar-width: none;
+  }
+  .day-strip::-webkit-scrollbar { display:none; }
+  .day-pill {
+    flex-shrink:0; width:44px; height:54px; border-radius:12px;
+    border: 1px solid var(--border); background: var(--card);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    cursor:pointer; transition: all 0.2s;
+  }
+  .day-pill span { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; }
+  .day-pill small { font-size:9px; color:var(--text-dim); }
+  .day-pill.today { border-color: #3b82f6; background: var(--accent-phy-dim); }
+  .day-pill.today span { color: #3b82f6; }
+  .day-pill.done { border-color: #166534; background:#052e16; }
+  .day-pill.done span { color: #22c55e; }
 
-.logo { display:flex; align-items:center; gap:10px; }
-.logo-hex {
-  width:32px; height:32px; border:1px solid var(--cyan); border-radius:6px;
-  display:flex; align-items:center; justify-content:center; font-size:1rem;
-  box-shadow:0 0 10px rgba(0,200,255,0.25); animation:hexPulse 3s ease-in-out infinite;
-}
-@keyframes hexPulse { 0%,100%{box-shadow:0 0 10px rgba(0,200,255,0.25)} 50%{box-shadow:0 0 22px rgba(0,200,255,0.5)} }
-.logo-name {
-  font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.3rem; letter-spacing:5px;
-  background:linear-gradient(90deg,var(--cyan),var(--cyan2),var(--cyan));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  background-size:200%; animation:shimmer 3s linear infinite;
-}
-@keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+  /* CARD */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  }
+  .card-header {
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;
+  }
+  .card-title {
+    font-family:'Syne',sans-serif; font-size:14px; font-weight:700;
+  }
+  .tag {
+    font-size:10px; padding: 3px 8px; border-radius: 6px; font-weight:600;
+    letter-spacing:0.5px; text-transform:uppercase;
+  }
+  .tag-bio { background: var(--accent-bio-dim); color: var(--accent-bio); }
+  .tag-phy { background: var(--accent-phy-dim); color: var(--accent-phy); }
+  .tag-chem { background: var(--accent-chem-dim); color: var(--accent-chem); }
+  .tag-high { background: #450a0a; color: #f87171; }
+  .tag-med { background: #422006; color: #fb923c; }
 
-.online {
-  font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--green);
-  display:flex; align-items:center; gap:5px; letter-spacing:1px;
-}
-.dot { width:6px; height:6px; background:var(--green); border-radius:50%; box-shadow:0 0 5px var(--green); animation:blink 1.5s ease-in-out infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  /* CHAPTER ROW */
+  .chapter-row {
+    background: var(--card2); border-radius: 10px; padding: 12px;
+    margin-bottom: 8px; border: 1px solid var(--border);
+  }
+  .chapter-top {
+    display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+  }
+  .chapter-name { font-size:13px; font-weight:500; flex:1; line-height:1.3; }
+  .wt-badge { font-size:10px; color:var(--text-dim); white-space:nowrap; padding-top:2px; }
+  .chapter-checks {
+    display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;
+  }
+  .check-item {
+    display:flex; align-items:center; gap:5px; cursor:pointer;
+  }
+  .check-box {
+    width:18px; height:18px; border-radius:5px; border:2px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    transition: all 0.15s; flex-shrink:0;
+  }
+  .check-box.checked { background: var(--tick); border-color: var(--tick); }
+  .check-box svg { display:none; }
+  .check-box.checked svg { display:block; }
+  .check-label { font-size:11px; color:var(--text-dim); }
 
-/* MESSAGES */
-.msgs {
-  flex:1; overflow-y:auto; padding:16px; display:flex;
-  flex-direction:column; gap:14px; scroll-behavior:smooth;
-}
-.msgs::-webkit-scrollbar { width:2px; }
-.msgs::-webkit-scrollbar-thumb { background:rgba(0,200,255,0.15); }
+  /* WEAK TOPICS */
+  .weak-toggle {
+    margin-top:10px; display:flex; align-items:center; gap:6px; cursor:pointer;
+  }
+  .weak-toggle span { font-size:11px; color:var(--red); font-weight:500; }
+  .weak-area {
+    display:none; margin-top:8px;
+  }
+  .weak-area.open { display:block; }
+  .weak-input {
+    width:100%; background: #1a0a0a; border:1px solid #450a0a; border-radius:8px;
+    padding:8px 10px; color:var(--text); font-family:'DM Sans',sans-serif;
+    font-size:12px; resize:none; min-height:56px;
+  }
+  .weak-input:focus { outline:none; border-color: var(--red); }
+  .weak-input::placeholder { color:#6b2222; }
 
-/* WELCOME */
-.welcome {
-  flex:1; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; gap:16px; text-align:center; padding:24px;
-  animation:fadeUp 1s ease;
-}
-@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-.w-orb {
-  width:76px; height:76px; border-radius:50%; border:1px solid var(--cyan);
-  display:flex; align-items:center; justify-content:center; font-size:2rem;
-  position:relative; animation:orbFloat 4s ease-in-out infinite;
-  box-shadow:0 0 28px rgba(0,200,255,0.25),inset 0 0 28px rgba(0,200,255,0.04);
-}
-.w-orb::before, .w-orb::after {
-  content:''; position:absolute; border-radius:50%; border:1px solid rgba(0,200,255,0.12);
-}
-.w-orb::before { inset:-12px; animation:spin 4s linear infinite; }
-.w-orb::after  { inset:-22px; animation:spin 7s linear infinite reverse; }
-@keyframes spin { to{transform:rotate(360deg)} }
-@keyframes orbFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-.w-title {
-  font-family:'Orbitron',sans-serif; font-size:1.4rem; font-weight:700;
-  letter-spacing:4px; color:var(--cyan); text-shadow:0 0 16px rgba(0,200,255,0.4);
-}
-.w-sub { font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:var(--muted); letter-spacing:2px; line-height:1.9; }
-.chips { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-top:4px; }
-.chip {
-  padding:6px 13px; border:1px solid rgba(0,200,255,0.18); border-radius:2px;
-  background:var(--glass); color:rgba(0,200,255,0.6);
-  font-family:'Share Tech Mono',monospace; font-size:0.58rem; letter-spacing:1px;
-  cursor:pointer; transition:all 0.2s;
-}
-.chip:hover, .chip:active { border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 8px rgba(0,200,255,0.12); }
+  /* PROGRESS BAR */
+  .prog-wrap { margin-bottom:12px; }
+  .prog-label { display:flex; justify-content:space-between; margin-bottom:5px; }
+  .prog-label span { font-size:12px; color:var(--text-mid); }
+  .prog-bar { height:6px; background: var(--border); border-radius:3px; overflow:hidden; }
+  .prog-fill { height:100%; border-radius:3px; transition: width 0.4s; }
+  .prog-fill.bio { background: var(--accent-bio); }
+  .prog-fill.phy { background: var(--accent-phy); }
+  .prog-fill.chem { background: var(--accent-chem); }
 
-/* BUBBLES */
-.msg { display:flex; gap:10px; animation:msgIn 0.3s ease; }
-.msg.user { flex-direction:row-reverse; animation-name:msgInR; }
-@keyframes msgIn  { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
-@keyframes msgInR { from{opacity:0;transform:translateX(6px)}  to{opacity:1;transform:translateX(0)} }
+  /* DAILY TASKS */
+  .task-card {
+    background: var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:14px; margin-bottom:12px;
+  }
+  .task-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; margin-bottom:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+  .task-row {
+    display:flex; align-items:center; gap:10px; padding:10px;
+    background:var(--card2); border-radius:10px; margin-bottom:8px;
+    border:1px solid var(--border); cursor:pointer; transition: border-color 0.2s;
+  }
+  .task-row.done-task { border-color: #166834; }
+  .task-row.done-task .task-name { text-decoration:line-through; color:var(--text-dim); }
+  .task-icon { font-size:20px; width:32px; text-align:center; }
+  .task-name { font-size:13px; flex:1; }
+  .task-time { font-size:11px; color:var(--text-dim); }
+  .task-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .task-check.done { background:var(--tick); border-color:var(--tick); }
 
-.av {
-  width:30px; height:30px; border-radius:4px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  font-size:0.85rem; align-self:flex-end;
-  font-family:'Share Tech Mono',monospace;
-}
-.msg.ai   .av { background:rgba(0,200,255,0.07); border:1px solid rgba(0,200,255,0.25); color:var(--cyan); }
-.msg.user .av { background:rgba(255,0,200,0.05); border:1px solid rgba(255,0,200,0.18); color:var(--magenta); }
+  /* SCORE INPUT */
+  .score-row { display:flex; gap:8px; margin-top:10px; }
+  .score-box {
+    flex:1; background:var(--card2); border:1px solid var(--border);
+    border-radius:10px; padding:10px; text-align:center;
+  }
+  .score-box label { font-size:10px; color:var(--text-dim); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }
+  .score-box input {
+    width:100%; text-align:center; background:transparent; border:none;
+    color:var(--text); font-family:'Syne',sans-serif; font-size:20px; font-weight:700;
+    outline:none;
+  }
+  .score-box input::placeholder { color:var(--border); font-size:16px; }
 
-.mbody { max-width:80%; }
-.mlabel { font-family:'Share Tech Mono',monospace; font-size:0.5rem; letter-spacing:2px; margin-bottom:4px; padding:0 3px; }
-.msg.ai   .mlabel { color:var(--cyan); opacity:0.5; }
-.msg.user .mlabel { color:var(--magenta); opacity:0.5; text-align:right; }
-.msg.user .mbody  { display:flex; flex-direction:column; align-items:flex-end; }
+  /* PLAN VIEW */
+  .plan-day-card {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:14px; margin-bottom:10px;
+  }
+  .plan-day-header {
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;
+  }
+  .plan-day-num { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; }
+  .plan-chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip {
+    font-size:11px; padding:4px 10px; border-radius:8px; font-weight:500;
+  }
+  .chip-bio { background:var(--accent-bio-dim); color:var(--accent-bio); }
+  .chip-phy { background:var(--accent-phy-dim); color:var(--accent-phy); }
+  .chip-chem { background:var(--accent-chem-dim); color:var(--accent-chem); }
 
-.bubble { padding:10px 13px; font-size:0.87rem; line-height:1.7; word-break:break-word; position:relative; }
-.msg.ai .bubble {
-  background:rgba(0,200,255,0.025); border:1px solid rgba(0,200,255,0.1);
-  border-radius:2px 10px 10px 10px; color:var(--text);
-}
-.msg.ai .bubble::before {
-  content:''; position:absolute; top:0; left:0; width:2px; height:100%;
-  background:linear-gradient(180deg,var(--cyan),transparent); border-radius:2px;
-}
-.msg.user .bubble {
-  background:rgba(255,0,200,0.03); border:1px solid rgba(255,0,200,0.12);
-  border-radius:10px 2px 10px 10px; color:var(--text);
-}
-.mtime { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--muted); margin-top:4px; padding:0 3px; }
-.msg.user .mtime { text-align:right; }
+  /* OVERVIEW */
+  .overview-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .ov-card {
+    background:var(--card2); border:1px solid var(--border); border-radius:12px; padding:12px;
+  }
+  .ov-card .num { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; }
+  .ov-card .lbl { font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .ov-card.phy .num { color:var(--accent-phy); }
+  .ov-card.bio .num { color:var(--accent-bio); }
+  .ov-card.chem .num { color:var(--accent-chem); }
+  .ov-card.day .num { color:var(--purple); }
 
-/* TYPING */
-.typing { display:flex; gap:10px; animation:msgIn 0.3s ease; }
-.tbubble {
-  padding:12px 16px; background:rgba(0,200,255,0.025);
-  border:1px solid rgba(0,200,255,0.1); border-radius:2px 10px 10px 10px;
-  display:flex; gap:5px; align-items:center;
-}
-.td { width:6px; height:6px; border-radius:50%; background:var(--cyan); opacity:0.3; animation:td 1.2s ease-in-out infinite; }
-.td:nth-child(2){animation-delay:0.2s} .td:nth-child(3){animation-delay:0.4s}
-@keyframes td { 0%,60%,100%{opacity:0.2;transform:scale(0.8)} 30%{opacity:1;transform:scale(1)} }
+  .section-head {
+    font-family:'Syne',sans-serif; font-size:12px; font-weight:700;
+    color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;
+    margin: 16px 0 8px;
+  }
 
-/* INPUT */
-.inp-zone {
-  padding:10px 14px 18px; border-top:1px solid var(--border2);
-  background:rgba(0,5,16,0.97); flex-shrink:0; position:relative;
-}
-.inp-zone::before {
-  content:''; position:absolute; top:0; left:8%; right:8%; height:1px;
-  background:linear-gradient(90deg,transparent,rgba(0,200,255,0.2),transparent);
-}
-.inp-frame {
-  display:flex; gap:8px; align-items:flex-end;
-  border:1px solid rgba(0,200,255,0.18); border-radius:4px;
-  padding:9px 12px; background:rgba(0,200,255,0.015);
-  transition:border-color 0.2s, box-shadow 0.2s;
-}
-.inp-frame:focus-within { border-color:rgba(0,200,255,0.45); box-shadow:0 0 14px rgba(0,200,255,0.07); }
-.inp-pre { font-family:'Share Tech Mono',monospace; font-size:0.78rem; color:rgba(0,200,255,0.4); flex-shrink:0; align-self:center; }
-.inp {
-  flex:1; background:transparent; border:none; outline:none;
-  color:var(--text); font-family:'Exo 2',sans-serif; font-size:0.9rem;
-  font-weight:300; resize:none; max-height:110px; line-height:1.5;
-}
-.inp::placeholder { color:var(--muted); font-size:0.8rem; }
-.sbtn {
-  width:36px; height:36px; border-radius:4px; background:transparent;
-  border:1px solid rgba(0,200,255,0.25); color:var(--cyan); font-size:1rem;
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  transition:all 0.2s; flex-shrink:0;
-}
-.sbtn:hover { background:rgba(0,200,255,0.08); border-color:var(--cyan); }
-.sbtn:disabled { opacity:0.2; cursor:not-allowed; }
-.sbtn:active { transform:scale(0.93); }
-.inp-foot { display:flex; justify-content:space-between; margin-top:6px; padding:0 2px; }
-.hint { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--muted); letter-spacing:0.5px; }
-.mem-on { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--green); display:flex; align-items:center; gap:4px; }
-.mem-on::before { content:''; width:5px; height:5px; background:var(--green); border-radius:50%; animation:blink 2s ease-in-out infinite; }
+  /* COLLAPSIBLE */
+  .collapsible-btn {
+    width:100%; background:var(--card2); border:1px solid var(--border);
+    border-radius:10px; padding:12px 14px; display:flex; align-items:center;
+    justify-content:space-between; cursor:pointer; margin-bottom:8px;
+    color:var(--text); font-family:'DM Sans',sans-serif;
+  }
+  .collapsible-btn .cleft { display:flex; align-items:center; gap:10px; }
+  .collapsible-btn .ctitle { font-size:13px; font-weight:500; }
+  .collapsible-btn .ccount { font-size:11px; color:var(--text-dim); }
+  .collapsible-btn .carrow { font-size:12px; color:var(--text-dim); transition:transform 0.2s; }
+  .collapsible-btn.open .carrow { transform:rotate(180deg); }
+  .collapsible-content { display:none; }
+  .collapsible-content.open { display:block; }
+
+  .alert-banner {
+    background:#450a0a; border:1px solid #7f1d1d; border-radius:12px;
+    padding:12px 14px; margin-bottom:14px; display:flex; gap:10px; align-items:flex-start;
+  }
+  .alert-banner .ai { font-size:18px; }
+  .alert-banner p { font-size:12px; color:#fca5a5; line-height:1.5; }
+  .alert-banner strong { color:#f87171; }
 </style>
 </head>
 <body>
 
-<canvas id="bgc"></canvas>
+<div class="header">
+  <div class="header-left">
+    <h1>Re-NEET 2026</h1>
+    <p>Smart Prep Tracker</p>
+  </div>
+  <div class="day-badge">
+    <span id="currentDayDisplay">1</span>
+    <small>Day</small>
+  </div>
+</div>
 
-<div class="app">
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active-plan" onclick="showSection('today')">✅ Today</button>
+  <button class="nav-btn" onclick="showSection('history')">📖 History</button>
+  <button class="nav-btn" onclick="showSection('biology')">🧬 Biology</button>
+  <button class="nav-btn" onclick="showSection('physics')">⚡ Physics</button>
+  <button class="nav-btn" onclick="showSection('chemistry')">🧪 Chemistry</button>
+</div>
 
-  <!-- HEADER -->
-  <header class="hdr">
-    <div class="logo">
-      <div class="logo-hex">⬡</div>
-      <div>
-        <div class="logo-name">XEROZ</div>
+<!-- ===== TODAY'S TASKS ===== -->
+<div class="section active" id="section-today">
+
+  <!-- Day selector -->
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+    <button onclick="changeDay(-1)" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 16px;font-size:18px;cursor:pointer;">‹</button>
+    <div style="text-align:center;">
+      <div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:#3b82f6;" id="dayLabel">Day 1</div>
+      <div style="font-size:11px;color:var(--text-dim);" id="dayDate"></div>
+    </div>
+    <button onclick="changeDay(1)" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 16px;font-size:18px;cursor:pointer;">›</button>
+  </div>
+
+  <!-- MORNING PLAN -->
+  <div class="task-card">
+    <div class="task-title">🌅 Morning Plan — What I'll Do Today</div>
+    <textarea class="weak-input" id="morningPlan" placeholder="Write your plan for today morning...&#10;e.g. Biology: Human Physiology (Neural Control)&#10;Physics: Current Electricity numericals&#10;Chemistry: Organic reactions revision&#10;Mock test at 2 PM" style="min-height:110px;display:block;border-color:#1e3a5f;" oninput="saveDayData()"></textarea>
+  </div>
+
+  <!-- MOCK SCORE -->
+  <div class="task-card">
+    <div class="task-title">📊 Mock Score</div>
+    <div class="score-row">
+      <div class="score-box">
+        <label style="color:#3b82f6;">Physics</label>
+        <input type="number" min="0" max="180" placeholder="--" id="scorePhysics" oninput="saveDayData(); updateTotal()">
+      </div>
+      <div class="score-box">
+        <label style="color:#f59e0b;">Chemistry</label>
+        <input type="number" min="0" max="180" placeholder="--" id="scoreChemistry" oninput="saveDayData(); updateTotal()">
+      </div>
+      <div class="score-box">
+        <label style="color:#22c55e;">Biology</label>
+        <input type="number" min="0" max="360" placeholder="--" id="scoreBiology" oninput="saveDayData(); updateTotal()">
       </div>
     </div>
-    <div class="online"><span class="dot"></span>ONLINE</div>
-  </header>
-
-  <!-- MESSAGES -->
-  <div class="msgs" id="msgs">
-    <div class="welcome" id="welcome">
-      <div class="w-orb">⬡</div>
-      <div class="w-title">XEROZ ONLINE</div>
-      <div class="w-sub">NEURAL INTERFACE READY<br>YOUR PERSONAL AI<br>ENTER COMMAND</div>
-      <div class="chips">
-        <div class="chip" onclick="tip('My name is ')">ENCODE NAME</div>
-        <div class="chip" onclick="tip('What can you do?')">CAPABILITIES</div>
-        <div class="chip" onclick="tip('I am building WorldPulse. Remember this.')">LOG PROJECT</div>
-        <div class="chip" onclick="tip('What do you know about me?')">RECALL DATA</div>
-        <div class="chip" onclick="tip('Teach me about AI')">LEARN AI</div>
-      </div>
+    <div style="text-align:center; margin-top:12px;">
+      <span style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;" id="totalScore">Total: — / 720</span>
     </div>
   </div>
 
-  <!-- INPUT -->
-  <div class="inp-zone">
-    <div class="inp-frame">
-      <span class="inp-pre">&gt;_</span>
-      <textarea class="inp" id="inp" placeholder="transmit to XEROZ..." rows="1"
-        onkeydown="onKey(event)" oninput="grow(this)"></textarea>
-      <button class="sbtn" id="sbtn" onclick="send()">⟶</button>
-    </div>
-    <div class="inp-foot">
-      <span class="hint">ENTER → SEND · SHIFT+ENTER → NEW LINE</span>
-      <span class="mem-on">MEMORY ACTIVE</span>
-    </div>
+  <!-- EVENING REVIEW -->
+  <div class="task-card">
+    <div class="task-title">🌙 End of Day — What I Did & Questions Practiced</div>
+    <textarea class="weak-input" id="eveningReview" placeholder="Write what you did today...&#10;e.g. Human Physiology – 40 PYQs (scored 32/40)&#10;Current Electricity – 25 questions (weak: Wheatstone Bridge)&#10;Organic reactions – revised 3 chapters&#10;Mock score: 560/720" style="min-height:130px;display:block;border-color:#166534;" oninput="saveDayData()"></textarea>
   </div>
+
+  <!-- SAVE BUTTON -->
+  <button onclick="saveAndConfirm()" style="width:100%;background:linear-gradient(135deg,#1e3a5f,#166534);border:1px solid #22c55e;color:#22c55e;font-family:Syne,sans-serif;font-size:14px;font-weight:700;border-radius:12px;padding:14px;cursor:pointer;letter-spacing:0.5px;">
+    ✅ Save Today's Entry
+  </button>
+  <div id="saveMsg" style="text-align:center;font-size:12px;color:#22c55e;margin-top:8px;display:none;">Saved successfully!</div>
 
 </div>
 
+<!-- ===== HISTORY ===== -->
+<div class="section" id="section-history">
+  <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">📖 Daily Journal History</div>
+  <div id="historyContainer"></div>
+  <div id="noHistory" style="text-align:center;color:var(--text-dim);font-size:13px;padding:40px 0;display:none;">No entries yet. Start writing from Day 1!</div>
+</div>
+
+<!-- ===== BIOLOGY ===== -->
+<div class="section" id="section-biology">
+  <div class="prog-wrap">
+    <div class="prog-label"><span>Biology Progress</span><span id="bioPercent">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill bio" id="bioBar" style="width:0%"></div></div>
+  </div>
+
+  <!-- BOTANY CLASS 11 -->
+  <button class="collapsible-btn open" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-bio">Botany</span>
+      <span class="ctitle">Class 11</span>
+      <span class="ccount">6 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content open" id="bio11-botany">
+    <!-- chapters rendered by JS -->
+  </div>
+
+  <!-- BOTANY CLASS 12 -->
+  <button class="collapsible-btn" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-bio">Botany</span>
+      <span class="ctitle">Class 12</span>
+      <span class="ccount">7 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content" id="bio12-botany"></div>
+
+  <!-- ZOOLOGY CLASS 11 -->
+  <button class="collapsible-btn" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-bio" style="background:#164e63;color:#22d3ee;">Zoology</span>
+      <span class="ctitle">Class 11</span>
+      <span class="ccount">5 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content" id="bio11-zoology"></div>
+
+  <!-- ZOOLOGY CLASS 12 -->
+  <button class="collapsible-btn" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-bio" style="background:#164e63;color:#22d3ee;">Zoology</span>
+      <span class="ctitle">Class 12</span>
+      <span class="ccount">7 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content" id="bio12-zoology"></div>
+</div>
+
+<!-- ===== PHYSICS ===== -->
+<div class="section" id="section-physics">
+  <div class="prog-wrap">
+    <div class="prog-label"><span>Physics Progress</span><span id="phyPercent">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill phy" id="phyBar" style="width:0%"></div></div>
+  </div>
+
+  <button class="collapsible-btn open" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-phy">Physics</span>
+      <span class="ctitle">Class 11</span>
+      <span class="ccount">10 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content open" id="phy11"></div>
+
+  <button class="collapsible-btn" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-phy">Physics</span>
+      <span class="ctitle">Class 12</span>
+      <span class="ccount">9 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content" id="phy12"></div>
+</div>
+
+<!-- ===== CHEMISTRY ===== -->
+<div class="section" id="section-chemistry">
+  <div class="prog-wrap">
+    <div class="prog-label"><span>Chemistry Progress</span><span id="chemPercent">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill chem" id="chemBar" style="width:0%"></div></div>
+  </div>
+
+  <button class="collapsible-btn open" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-chem">Physical</span>
+      <span class="ctitle">Chemistry</span>
+      <span class="ccount">10 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content open" id="chem-physical"></div>
+
+  <button class="collapsible-btn" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-chem">Inorganic</span>
+      <span class="ctitle">Chemistry</span>
+      <span class="ccount">9 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content" id="chem-inorganic"></div>
+
+  <button class="collapsible-btn" onclick="toggleCollapse(this)">
+    <div class="cleft">
+      <span class="tag tag-chem">Organic</span>
+      <span class="ctitle">Chemistry</span>
+      <span class="ccount">10 chapters</span>
+    </div>
+    <span class="carrow">▼</span>
+  </button>
+  <div class="collapsible-content" id="chem-organic"></div>
+</div>
+
+
+
 <script>
+// ===== DATA =====
 
-// ════════════════════════════════════════
-// STEP 1: PASTE YOUR OPENROUTER API KEY
-// Get FREE key → openrouter.ai/keys
-// Sign up with Google → Copy key
-// ════════════════════════════════════════
-const API_KEY = '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';
-
-
-// ════════════════════════════════════════
-// DO NOT EDIT BELOW THIS LINE
-// ════════════════════════════════════════
-
-const MODEL = 'mistralai/mistral-7b-instruct:free';
-
-// PARTICLE BACKGROUND
-const C = document.getElementById('bgc');
-const X = C.getContext('2d');
-let W = C.width  = innerWidth;
-let H = C.height = innerHeight;
-window.addEventListener('resize', () => { W = C.width = innerWidth; H = C.height = innerHeight; });
-
-const P = Array.from({length:60}, () => ({
-  x: Math.random() * innerWidth,
-  y: Math.random() * innerHeight,
-  vx: (Math.random() - 0.5) * 0.25,
-  vy: (Math.random() - 0.5) * 0.25,
-  r:  Math.random() * 1.2 + 0.4,
-  a:  Math.random() * 0.3 + 0.08
-}));
-
-(function loop() {
-  X.clearRect(0, 0, W, H);
-  // Grid
-  X.strokeStyle = 'rgba(0,200,255,0.025)';
-  X.lineWidth = 1;
-  for(let x = 0; x < W; x += 60) { X.beginPath(); X.moveTo(x,0); X.lineTo(x,H); X.stroke(); }
-  for(let y = 0; y < H; y += 60) { X.beginPath(); X.moveTo(0,y); X.lineTo(W,y); X.stroke(); }
-  // Particles
-  P.forEach((p, i) => {
-    p.x += p.vx; p.y += p.vy;
-    if(p.x < 0) p.x = W; if(p.x > W) p.x = 0;
-    if(p.y < 0) p.y = H; if(p.y > H) p.y = 0;
-    X.beginPath(); X.arc(p.x, p.y, p.r, 0, Math.PI*2);
-    X.fillStyle = `rgba(0,200,255,${p.a})`; X.fill();
-    for(let j = i+1; j < P.length; j++) {
-      const q = P[j], d = Math.hypot(p.x-q.x, p.y-q.y);
-      if(d < 90) {
-        X.beginPath(); X.moveTo(p.x,p.y); X.lineTo(q.x,q.y);
-        X.strokeStyle = `rgba(0,200,255,${0.05*(1-d/90)})`; X.lineWidth=0.5; X.stroke();
-      }
-    }
-  });
-  requestAnimationFrame(loop);
-})();
-
-// MEMORY
-let mems = JSON.parse(localStorage.getItem('xeroz_mem') || '[]');
-let msgs = [];
-let busy = false;
-
-function buildSystem() {
-  let s = `You are XEROZ — a highly intelligent, personal AI assistant. You are sharp, direct, and slightly futuristic. You are exclusively this user's personal AI.
-
-Rules:
-- Be helpful, concise, and smart
-- Reference the user's memories naturally
-- Never say "As an AI" — you ARE XEROZ
-- Today: ${new Date().toDateString()}`;
-
-  if(mems.length) {
-    s += `\n\n[ YOUR MEMORY OF THIS USER ]\n`;
-    mems.forEach(m => s += `• ${m.k}: ${m.v}\n`);
-  }
-  return s;
-}
-
-function autoMem(msg) {
-  const nm = msg.match(/my name is ([A-Za-z]+)/i);
-  if(nm && !mems.find(m => m.k.toLowerCase() === 'name')) {
-    mems.push({k:'Name', v:nm[1]});
-    localStorage.setItem('xeroz_mem', JSON.stringify(mems));
-  }
-}
-
-// CHAT UI
-function bubble(role, text) {
-  const w = document.getElementById('welcome');
-  if(w) w.remove();
-  const el = document.getElementById('msgs');
-  const t  = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-  const d  = document.createElement('div');
-  d.className = `msg ${role}`;
-  d.innerHTML = `
-    <div class="av">${role === 'ai' ? '⬡' : '◈'}</div>
-    <div class="mbody">
-      <div class="mlabel">${role === 'ai' ? 'XEROZ' : 'YOU'}</div>
-      <div class="bubble">${text.replace(/\n/g,'<br>')}</div>
-      <div class="mtime">${t}</div>
-    </div>`;
-  el.appendChild(d);
-  el.scrollTop = el.scrollHeight;
-}
-
-function showTyping() {
-  const el = document.getElementById('msgs');
-  const d  = document.createElement('div');
-  d.id = 'typ'; d.className = 'typing';
-  d.innerHTML = `
-    <div class="av" style="background:rgba(0,200,255,0.07);border:1px solid rgba(0,200,255,0.25);color:#00c8ff;border-radius:4px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">⬡</div>
-    <div class="tbubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
-  el.appendChild(d);
-  el.scrollTop = el.scrollHeight;
-}
-function removeTyping() { const t = document.getElementById('typ'); if(t) t.remove(); }
-
-// SEND MESSAGE
-async function send() {
-  const inp  = document.getElementById('inp');
-  const text = inp.value.trim();
-  if(!text || busy) return;
-
-  inp.value = ''; inp.style.height = 'auto';
-  busy = true;
-  document.getElementById('sbtn').disabled = true;
-
-  bubble('user', text);
-  msgs.push({role:'user', content: text});
-  autoMem(text);
-  showTyping();
-
-  try {
-    // Build messages for OpenRouter
-    const history = [
-      {role: 'system', content: buildSystem()},
-      ...msgs.slice(-18).map(m => ({role: m.role, content: m.content}))
-    ];
-
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
-        'HTTP-Referer': window.location.href,
-        'X-Title': 'XEROZ AI'
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: history
-      })
-    });
-
-    const data = await res.json();
-
-    if(data.error) {
-      throw new Error(data.error.message);
-    }
-
-    const reply = data.choices?.[0]?.message?.content || 'NO RESPONSE RECEIVED.';
-
-    removeTyping();
-    bubble('ai', reply);
-    msgs.push({role:'assistant', content: reply});
-
-  } catch(err) {
-    removeTyping();
-    bubble('ai', 'ERROR: ' + (err.message || 'Check your API key at aistudio.google.com'));
-  }
-
-  busy = false;
-  document.getElementById('sbtn').disabled = false;
-  document.getElementById('inp').focus();
-}
-
-function tip(t)  { document.getElementById('inp').value = t; document.getElementById('inp').focus(); }
-function onKey(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } }
-function grow(el){ el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
-
-</script>
-</body>
-</html>
+const bioBot
